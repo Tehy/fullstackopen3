@@ -5,16 +5,22 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "deploy": "cd front && npm run deploy",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev-front": "npm run start --prefix front",
+    "dev-server": "nodemon index.js",
+    "dev": "concurrently \"npm run dev-server\" \"npm run dev-front\""
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.17.1",
+    "mongoose": "^5.9.16",
     "morgan": "^1.10.0"
   },
   "devDependencies": {
+    "concurrently": "^5.2.0",
     "nodemon": "^2.0.4"
   }
 }

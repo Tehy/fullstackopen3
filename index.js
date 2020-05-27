@@ -1,6 +1,12 @@
 const express = require("express");
 const app = express();
+app.use(express.static("build"));
 var morgan = require("morgan");
+const root = "./static/index.html";
+const cors = require("cors");
+const Person = require("./models/person");
+
+app.use(cors());
 
 morgan.token("resBody", (req, res) => {
   if (req.method === "POST") {
@@ -15,38 +21,18 @@ app.use(
 );
 app.use(express.json());
 
-let persons = [
-  {
-    name: "Arto Hellas",
-    number: "040-123456",
-    id: 1,
-  },
-  {
-    name: "Ada Lovelace",
-    number: "39-44-5323523",
-    id: 2,
-  },
-  {
-    name: "Dan Abramov",
-    number: "12-43-234345",
-    id: 3,
-  },
-  {
-    name: "Mary Poppendieck",
-    number: "39-23-6423122",
-    id: 4,
-  },
-];
-
-app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const person = persons.find((note) => {
-    return note.id === id;
+app.get("/", (req, res) => {
+  res.send(root);
+});
+app.get("/api/persons", (req, res) => {
+  Person.find({}).then((persons) => {
+    res.json(persons);
   });
-
-  person === undefined
-    ? response.status(404).send("<p>404</p>")
-    : response.json(person);
+});
+app.get("/api/persons/:id", (request, response) => {
+  Person.findById(request.params.id).then((person) => {
+    response.json(person);
+  });
 });
 app.delete("/api/persons/:id", (request, response) => {
   const id = Number(request.params.id);
@@ -60,14 +46,6 @@ app.get("/info", (req, res) => {
 
   res.send(infoResp);
 });
-
-app.get("/api/persons", (req, res) => {
-  res.json(persons);
-});
-const generateId = () => {
-  const id = Math.floor(Math.random() * 100000);
-  return id;
-};
 
 app.post("/api/persons", (request, response) => {
   const body = request.body;
@@ -86,15 +64,14 @@ app.post("/api/persons", (request, response) => {
     });
   }
 
-  const person = {
+  const person = new Person({
     name: body.name,
     number: body.number,
-    id: generateId(),
-  };
+  });
 
-  persons = persons.concat(person);
-
-  response.json(person);
+  person.save().then((person) => {
+    response.json(person);
+  });
 });
 
 const PORT = process.env.PORT || 3001;
